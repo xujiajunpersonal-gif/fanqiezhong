@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍅 番茄钟</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🍅 番茄钟</h1>
+
+        <!-- 模式切换 -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="work">工作</button>
+            <button class="mode-tab" data-mode="short">短休</button>
+            <button class="mode-tab" data-mode="long">长休</button>
+        </div>
+
+        <!-- 时间设置 -->
+        <div class="settings">
+            <label>工作<input type="number" id="set-work" value="10" min="1" max="120">分</label>
+            <label>短休<input type="number" id="set-short" value="5" min="1" max="60">分</label>
+            <label>长休<input type="number" id="set-long" value="15" min="1" max="60">分</label>
+        </div>
+
+        <!-- 计时器 -->
+        <div class="timer" id="timer">
+            <svg class="progress-ring" width="260" height="260">
+                <circle class="progress-bg" cx="130" cy="130" r="120" />
+                <circle class="progress-bar" cx="130" cy="130" r="120" />
+            </svg>
+            <div class="time-display" id="time-display">10:00</div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button id="btn-start" class="btn btn-primary">开始</button>
+            <button id="btn-reset" class="btn btn-secondary">重置</button>
+        </div>
+
+        <!-- 番茄计数 -->
+        <div class="counter">
+            今日完成：<span id="count">0</span> 🍅
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+:root {
+    --color-work: #e74c3c;
+    --color-short: #27ae60;
+    --color-long: #3498db;
+    --color-current: var(--color-work);
+    --bg: #1a1a2e;
+    --card-bg: #16213e;
+    --text: #eee;
+    --text-muted: #888;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+}
+
+/* 模式标签 */
+.mode-tabs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.mode-tab {
+    background: transparent;
+    border: 1px solid #333;
+    color: var(--text-muted);
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.25s;
+}
+
+.mode-tab:hover {
+    color: var(--text);
+    border-color: #555;
+}
+
+.mode-tab.active {
+    background: var(--color-current);
+    border-color: var(--color-current);
+    color: #fff;
+}
+
+/* 时间设置 */
+.settings {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.settings label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.settings input {
+    width: 42px;
+    background: var(--card-bg);
+    border: 1px solid #333;
+    color: var(--text);
+    border-radius: 6px;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.settings input:focus {
+    outline: none;
+    border-color: var(--color-current);
+}
+
+/* 计时器 */
+.timer {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin: 0 auto 1.5rem;
+    cursor: pointer;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-bg {
+    fill: none;
+    stroke: #2a2a4a;
+    stroke-width: 8;
+}
+
+.progress-bar {
+    fill: none;
+    stroke: var(--color-current);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s linear, stroke 0.4s;
+}
+
+.time-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3.2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 控制按钮 */
+.controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+}
+
+.btn {
+    padding: 0.6rem 2.5rem;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--color-current);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    opacity: 0.85;
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    border-color: #666;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 番茄计数 */
+.counter {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+#count {
+    color: var(--color-current);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* 响应式 */
+@media (max-width: 400px) {
+    h1 { font-size: 1.4rem; }
+    .timer { width: 220px; height: 220px; }
+    .progress-ring { width: 220px; height: 220px; }
+    .time-display { font-size: 2.6rem; }
+    .settings { gap: 0.4rem; }
+}
