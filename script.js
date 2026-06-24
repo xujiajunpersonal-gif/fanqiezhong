@@ -12,8 +12,8 @@ const STATUS_TEXT = {
 // ===== 状态 =====
 let settings  = { work: 25, short: 5, long: 15 };
 let mode      = 'work';
-let timeLeft  = settings[mode] * 60;
-let totalDuration = timeLeft;
+let timeLeft;       // 初始化时计算
+let totalDuration;
 let isRunning = false;
 let timerId   = null;
 let completedPomodoros = 0;
@@ -43,10 +43,17 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 function init() {
     loadState();
     syncInputsToSettings();
+    // ★ 修复: loadState 可能改了 settings，这里重新计算 timeLeft
+    resetTimerState();
     setupProgressRing();
     updateColor();
     updateDisplay();
     updateCountDisplay();
+}
+
+function resetTimerState() {
+    timeLeft = settings[mode] * 60;
+    totalDuration = timeLeft;
 }
 
 // ===== 进度环初始化 =====
@@ -105,7 +112,6 @@ function playSound() {
         const ctx = getAudioCtx();
         const now = ctx.currentTime;
 
-        // 三连音，清脆悦耳
         [0, 0.18, 0.36].forEach((delay, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -194,7 +200,7 @@ function start() {
         return;
     }
 
-    // 如果计时已经结束，重新开始
+    // 如果计时已经结束（timeLeft === 0），重新加载当前模式的时长
     if (timeLeft <= 0) {
         timeLeft = settings[mode] * 60;
         totalDuration = timeLeft;
@@ -207,7 +213,7 @@ function start() {
     setModeTabsEnabled(false);
     timerId = setInterval(tick, 1000);
 
-    // 预热 AudioContext（利用用户点击手势）
+    // 预热 AudioContext
     getAudioCtx();
     requestNotificationPermission();
 }
@@ -215,6 +221,7 @@ function start() {
 function pause() {
     isRunning = false;
     clearInterval(timerId);
+    timerId = null;
     btnStart.innerHTML = '<span class="btn-icon">▶</span> 继续';
     timerEl.classList.remove('running');
     timerStatus.textContent = STATUS_TEXT.paused;
@@ -222,6 +229,7 @@ function pause() {
 
 function reset() {
     clearInterval(timerId);
+    timerId = null;
     isRunning = false;
     timeLeft = settings[mode] * 60;
     totalDuration = timeLeft;
@@ -234,6 +242,7 @@ function reset() {
 
 function skip() {
     clearInterval(timerId);
+    timerId = null;
     isRunning = false;
     timerEl.classList.remove('running');
     setModeTabsEnabled(true);
@@ -241,7 +250,8 @@ function skip() {
     timerStatus.textContent = STATUS_TEXT.idle;
 
     if (mode === 'work') {
-        // 跳过工作 → 进入休息（不累计番茄）
+        // ★ 修复: 跳过未完成的工作 → 总是去短休（不配得长休）
+        // 但如果刚好完成了 4 的倍数个番茄、上轮已经是长休结束回到工作，这里用当前的 completedPomodoros 判断
         const next = (completedPomodoros > 0 && completedPomodoros % 4 === 0) ? 'long' : 'short';
         switchMode(next);
     } else {
@@ -256,6 +266,7 @@ function tick() {
 
     if (timeLeft <= 0) {
         clearInterval(timerId);
+        timerId = null;
         isRunning = false;
         onComplete();
     }
@@ -263,6 +274,7 @@ function tick() {
 
 function switchMode(newMode) {
     clearInterval(timerId);
+    timerId = null;
     isRunning = false;
     mode = newMode;
     timeLeft = settings[mode] * 60;
@@ -285,35 +297,42 @@ function onComplete() {
     // 音效
     playSound();
 
-    // 通知 + 标题闪烁
-    const title = mode === 'work' ? '🍅 工作完成！' : '⏰ 休息结束！';
-    const body  = mode === 'work' ? '太棒了，休息一下吧～' : '准备开始新的番茄钟！';
-    sendNotification(title, body);
-    flashTitle(title);
-
     // 完成动画
     timerEl.classList.add('complete');
     setTimeout(() => timerEl.classList.remove('complete'), 550);
 
     if (mode === 'work') {
-        // 累计番茄
+        // ★ 累计番茄
         completedPomodoros++;
         updateCountDisplay();
         saveState();
 
         // 数字弹跳动画
         countEl.classList.remove('bump');
-        void countEl.offsetWidth; // 强制回流以重新触发动画
+        void countEl.offsetWidth; // 强制回流重新触发动画
         countEl.classList.add('bump');
 
+        // 通知 + 标题闪烁
+        const msg = '🍅 工作完成！';
+        sendNotification(msg, '太棒了，休息一下吧～');
+        flashTitle(msg);
+
+        // 每 4 个番茄进入长休
         const nextMode = (completedPomodoros % 4 === 0) ? 'long' : 'short';
         switchMode(nextMode);
     } else {
+        // 休息结束 → 回到工作
+        const msg = '⏰ 休息结束！';
+        sendNotification(msg, '准备开始新的番茄钟！');
+        flashTitle(msg);
         switchMode('work');
     }
 }
 
-// ===== 时间设置变更 =====
+// ===== 时间设置 =====
+// 防抖：input 事件不立即 save，延迟 600ms 批量写
+let saveDebounceId = null;
+
 function updateSettings() {
     for (const key of ['work', 'short', 'long']) {
         const val = parseInt(inputs[key].value, 10);
@@ -322,7 +341,7 @@ function updateSettings() {
             settings[key] = Math.min(val, max);
             inputs[key].value = settings[key];
         } else {
-            // 无效输入则回退到当前有效值
+            // 无效输入回退到当前有效值
             inputs[key].value = settings[key];
         }
     }
@@ -334,7 +353,9 @@ function updateSettings() {
         updateDisplay();
     }
 
-    saveState();
+    // 防抖保存，避免每次按键都写 localStorage
+    clearTimeout(saveDebounceId);
+    saveDebounceId = setTimeout(saveState, 600);
 }
 
 // ===== 事件绑定 =====
@@ -349,12 +370,7 @@ modeTabs.forEach(tab => {
 });
 
 // 点击圆环开始 / 暂停
-timerEl.addEventListener('click', (e) => {
-    // 防止点到 SVG 或内部文字时重复触发
-    if (e.target === timerEl || e.target.closest('.time-display, .timer-status, .progress-ring')) {
-        start();
-    }
-});
+timerEl.addEventListener('click', start);
 
 // 时间输入变更
 Object.values(inputs).forEach(input => {
@@ -383,7 +399,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// 页面可见性变化时停止标题闪烁（用户切回标签页）
+// 页面可见性变化时恢复标题
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !isRunning) {
         document.title = '🍅 番茄钟';
