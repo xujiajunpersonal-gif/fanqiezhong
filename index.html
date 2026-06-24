@@ -7,43 +7,101 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🍅 番茄钟</h1>
+    <!-- 背景装饰 -->
+    <div class="bg-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <main class="container">
+        <!-- 标题 -->
+        <header class="header">
+            <h1>🍅 番茄钟</h1>
+            <p class="subtitle">专注当下，高效每一刻</p>
+        </header>
 
         <!-- 模式切换 -->
-        <div class="mode-tabs">
-            <button class="mode-tab active" data-mode="work">工作</button>
-            <button class="mode-tab" data-mode="short">短休</button>
-            <button class="mode-tab" data-mode="long">长休</button>
-        </div>
-
-        <!-- 时间设置 -->
-        <div class="settings">
-            <label>工作<input type="number" id="set-work" value="10" min="1" max="120">分</label>
-            <label>短休<input type="number" id="set-short" value="5" min="1" max="60">分</label>
-            <label>长休<input type="number" id="set-long" value="15" min="1" max="60">分</label>
-        </div>
+        <nav class="mode-tabs" aria-label="计时模式">
+            <button class="mode-tab active" data-mode="work">💼 工作</button>
+            <button class="mode-tab" data-mode="short">☕ 短休</button>
+            <button class="mode-tab" data-mode="long">🌴 长休</button>
+        </nav>
 
         <!-- 计时器 -->
-        <div class="timer" id="timer">
-            <svg class="progress-ring" width="260" height="260">
-                <circle class="progress-bg" cx="130" cy="130" r="120" />
-                <circle class="progress-bar" cx="130" cy="130" r="120" />
+        <div class="timer" id="timer" title="点击开始 / 暂停">
+            <svg class="progress-ring" width="280" height="280" viewBox="0 0 280 280">
+                <defs>
+                    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="5" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+                <circle class="progress-bg" cx="140" cy="140" r="125" />
+                <circle class="progress-bar" cx="140" cy="140" r="125" filter="url(#glow)" />
             </svg>
-            <div class="time-display" id="time-display">10:00</div>
+            <div class="time-display" id="time-display">25:00</div>
+            <div class="timer-status" id="timer-status">准备开始</div>
         </div>
 
         <!-- 控制按钮 -->
         <div class="controls">
-            <button id="btn-start" class="btn btn-primary">开始</button>
-            <button id="btn-reset" class="btn btn-secondary">重置</button>
+            <button id="btn-start" class="btn btn-primary">
+                <span class="btn-icon">▶</span>
+                开始
+            </button>
+            <button id="btn-skip" class="btn btn-ghost" title="跳过当前阶段 (S)">
+                ⏭ 跳过
+            </button>
+            <button id="btn-reset" class="btn btn-secondary" title="重置计时 (R)">
+                ↺ 重置
+            </button>
+        </div>
+
+        <!-- 时间设置 -->
+        <div class="settings">
+            <div class="setting-item">
+                <label for="set-work">💼 工作</label>
+                <div class="input-wrapper">
+                    <input type="number" id="set-work" value="25" min="1" max="120">
+                    <span class="unit">分</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label for="set-short">☕ 短休</label>
+                <div class="input-wrapper">
+                    <input type="number" id="set-short" value="5" min="1" max="60">
+                    <span class="unit">分</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label for="set-long">🌴 长休</label>
+                <div class="input-wrapper">
+                    <input type="number" id="set-long" value="15" min="1" max="60">
+                    <span class="unit">分</span>
+                </div>
+            </div>
         </div>
 
         <!-- 番茄计数 -->
         <div class="counter">
-            今日完成：<span id="count">0</span> 🍅
+            <div class="counter-label">今日完成</div>
+            <div class="counter-value">
+                <span id="count">0</span>
+                <span class="counter-unit">🍅</span>
+            </div>
         </div>
-    </div>
+
+        <!-- 键盘快捷键提示 -->
+        <div class="kbd-hints" aria-label="快捷键">
+            <kbd>Space</kbd> 开始/暂停
+            <kbd>R</kbd> 重置
+            <kbd>S</kbd> 跳过
+        </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
