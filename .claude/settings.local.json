@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -m http.server 8765)"
+      "Bash(python3 -m http.server 8765)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
